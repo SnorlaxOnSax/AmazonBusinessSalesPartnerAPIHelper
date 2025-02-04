@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Import Project="$(NuGetPackageRoot)microsoft.extensions.primitives/9.0.1/buildTransitive/netcoreapp2.0/Microsoft.Extensions.Primitives.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.extensions.primitives/9.0.1/buildTransitive/netcoreapp2.0/Microsoft.Extensions.Primitives.targets')" />
+    <Import Project="$(NuGetPackageRoot)microsoft.extensions.configuration.abstractions/9.0.1/buildTransitive/netcoreapp2.0/Microsoft.Extensions.Configuration.Abstractions.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.extensions.configuration.abstractions/9.0.1/buildTransitive/netcoreapp2.0/Microsoft.Extensions.Configuration.Abstractions.targets')" />
+    <Import Project="$(NuGetPackageRoot)microsoft.extensions.configuration/9.0.1/buildTransitive/netcoreapp2.0/Microsoft.Extensions.Configuration.targets" Condition="Exists('$(NuGetPackageRoot)microsoft.extensions.configuration/9.0.1/buildTransitive/netcoreapp2.0/Microsoft.Extensions.Configuration.targets')" />
+  </ImportGroup>
+</Project>
