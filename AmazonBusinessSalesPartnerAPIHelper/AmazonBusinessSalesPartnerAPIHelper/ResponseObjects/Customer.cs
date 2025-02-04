@@ -1,4 +1,4 @@
-namespace AmazonBusinessSalesPartnerAPIHelper
+namespace AmazonBusinessSalesPartnerAPIHelper.ResponseObjects
 {
     public class Customer
     {

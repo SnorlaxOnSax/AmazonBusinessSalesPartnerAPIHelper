@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.Serialization;
 
-namespace AmazonBusinessSalesPartnerAPIHelper
+namespace AmazonBusinessSalesPartnerAPIHelper.Enums
 {
     public enum TransactionType
     {

@@ -1,12 +1,18 @@
 {
   "version": 2,
-  "dgSpecHash": "ykfLgV8cNN0=",
+  "dgSpecHash": "vviDZ0ns0+s=",
   "success": true,
   "projectFilePath": "/Users/jaredheadings/Git/AmazonBusinessSalesPartnerAPIHelper/AmazonBusinessSalesPartnerAPIHelper/AmazonBusinessSalesPartnerAPIHelper/AmazonBusinessSalesPartnerAPIHelper.csproj",
   "expectedPackageFiles": [
+    "/Users/jaredheadings/.nuget/packages/microsoft.bcl.asyncinterfaces/6.0.0/microsoft.bcl.asyncinterfaces.6.0.0.nupkg.sha512",
+    "/Users/jaredheadings/.nuget/packages/microsoft.bcl.timeprovider/8.0.0/microsoft.bcl.timeprovider.8.0.0.nupkg.sha512",
     "/Users/jaredheadings/.nuget/packages/microsoft.extensions.configuration/9.0.1/microsoft.extensions.configuration.9.0.1.nupkg.sha512",
     "/Users/jaredheadings/.nuget/packages/microsoft.extensions.configuration.abstractions/9.0.1/microsoft.extensions.configuration.abstractions.9.0.1.nupkg.sha512",
+    "/Users/jaredheadings/.nuget/packages/microsoft.extensions.configuration.binder/9.0.1/microsoft.extensions.configuration.binder.9.0.1.nupkg.sha512",
     "/Users/jaredheadings/.nuget/packages/microsoft.extensions.primitives/9.0.1/microsoft.extensions.primitives.9.0.1.nupkg.sha512",
+    "/Users/jaredheadings/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512",
+    "/Users/jaredheadings/.nuget/packages/polly/8.5.2/polly.8.5.2.nupkg.sha512",
+    "/Users/jaredheadings/.nuget/packages/polly.core/8.5.2/polly.core.8.5.2.nupkg.sha512",
     "/Users/jaredheadings/.nuget/packages/restsharp/112.1.0/restsharp.112.1.0.nupkg.sha512",
     "/Users/jaredheadings/.nuget/packages/system.memory/4.5.5/system.memory.4.5.5.nupkg.sha512",
     "/Users/jaredheadings/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"

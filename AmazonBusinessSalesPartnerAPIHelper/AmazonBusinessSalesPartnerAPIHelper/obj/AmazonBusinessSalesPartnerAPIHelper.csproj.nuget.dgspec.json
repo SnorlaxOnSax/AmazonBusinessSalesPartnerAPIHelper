@@ -42,6 +42,22 @@
               "target": "Package",
               "version": "[9.0.1, )"
             },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.1, )"
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[9.0.1, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.5.2, )"
+            },
             "RestSharp": {
               "target": "Package",
               "version": "[112.1.0, )"

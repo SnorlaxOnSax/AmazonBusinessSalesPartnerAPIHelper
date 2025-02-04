@@ -1,4 +1,8 @@
+using AmazonBusinessSalesPartnerAPIHelper.RequestObjects;
+using AmazonBusinessSalesPartnerAPIHelper.ResponseObjects;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using RestSharp;
 
 namespace AmazonBusinessSalesPartnerAPIHelper

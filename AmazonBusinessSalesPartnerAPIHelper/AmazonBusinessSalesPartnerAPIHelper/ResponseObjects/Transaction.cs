@@ -1,4 +1,6 @@
-namespace AmazonBusinessSalesPartnerAPIHelper
+using AmazonBusinessSalesPartnerAPIHelper.Enums;
+
+namespace AmazonBusinessSalesPartnerAPIHelper.ResponseObjects
 {
     public class Transaction
     {
