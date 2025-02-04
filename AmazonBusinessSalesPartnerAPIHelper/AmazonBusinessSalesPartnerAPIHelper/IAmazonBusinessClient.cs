@@ -1,3 +1,5 @@
+using AmazonBusinessSalesPartnerAPIHelper.ResponseObjects;
+
 namespace AmazonBusinessSalesPartnerAPIHelper
 {
     public interface IAmazonBusinessClient

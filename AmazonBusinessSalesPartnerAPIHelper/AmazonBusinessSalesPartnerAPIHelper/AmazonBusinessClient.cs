@@ -31,22 +31,24 @@ namespace AmazonBusinessSalesPartnerAPIHelper
 
         public AmazonBusinessClient(IConfiguration config)
         {
-            _clientId = config.GetSection("AmazonBusiness").GetValue<string>("ClientId");
-            _clientSecret = config.GetSection("AmazonBusiness").GetValue<string>("ClientSecret");
-            _refreshToken = config.GetSection("AmazonBusiness").GetValue<string>("RefreshToken");
-            _baseUrl = config.GetSection("AmazonBusiness").GetValue<string>("BaseApiUrl");
-            _authorizationBaseUrl = config.GetSection("AmazonBusiness").GetValue<string>("AuthorizationBaseApiUrl");
-            config.GetSection("AmazonBusiness").GetValue<int>("DaysToQuery");
-            _abOrdersGetOrderByOrderIdEndpoint = config.GetSection("AmazonBusiness").GetValue<string>("ABOrdersGetOrderByOrderIdEndpoint");
-            _abReconciliationGetTransactionsEndpoint = config.GetSection("AmazonBusiness").GetValue<string>("ABReconciliationGetTransactionsEndpoint");
-            _abReconciliationGetInvoiceDetailsEndpoint = config.GetSection("AmazonBusiness").GetValue<string>("ABReconciliationGetInvoiceDetailsEndpoint");
+            // this setup assumes that an "AmazonBusiness" section is present in your appSettings.json file where this data is stored
             
+            _clientId = config.GetSection("AmazonBusiness").GetValue<string>("ClientId") ?? string.Empty;
+            _clientSecret = config.GetSection("AmazonBusiness").GetValue<string>("ClientSecret")  ?? string.Empty;
+            _refreshToken = config.GetSection("AmazonBusiness").GetValue<string>("RefreshToken")  ?? string.Empty;
+            _baseUrl = config.GetSection("AmazonBusiness").GetValue<string>("BaseApiUrl") ?? string.Empty;
+            _authorizationBaseUrl = config.GetSection("AmazonBusiness").GetValue<string>("AuthorizationBaseApiUrl") ?? string.Empty;
+            _abOrdersGetOrderByOrderIdEndpoint = config.GetSection("AmazonBusiness").GetValue<string>("ABOrdersGetOrderByOrderIdEndpoint") ?? string.Empty;
+            _abReconciliationGetTransactionsEndpoint = config.GetSection("AmazonBusiness").GetValue<string>("ABReconciliationGetTransactionsEndpoint") ?? string.Empty;
+            _abReconciliationGetInvoiceDetailsEndpoint = config.GetSection("AmazonBusiness").GetValue<string>("ABReconciliationGetInvoiceDetailsEndpoint") ?? string.Empty;
+                
             _signatureSigner = new AWSSigV4Signer(new AWSAuthenticationCredentials
             {
-                AccessKeyId = config.GetSection("AmazonBusiness").GetValue<string>("AWSAccessKeyId"),
-                SecretKey = config.GetSection("AmazonBusiness").GetValue<string>("AWSSecretAccessKey"),
-                Region = config.GetSection("AmazonBusiness").GetValue<string>("AWSRegion")
+                AccessKeyId = config.GetSection("AmazonBusiness").GetValue<string>("AWSAccessKeyId") ?? string.Empty,
+                SecretKey = config.GetSection("AmazonBusiness").GetValue<string>("AWSSecretAccessKey") ?? string.Empty,
+                Region = config.GetSection("AmazonBusiness").GetValue<string>("AWSRegion") ?? string.Empty
             });
+
         }
 
         /// <summary>
@@ -58,7 +60,7 @@ namespace AmazonBusinessSalesPartnerAPIHelper
         public string GetLWAToken()
         {
             var lwaClient = new RestClient(_authorizationBaseUrl);
-            var lwaTokenRequestBody = new LWATokenRequestBody
+            var lwaTokenRequestBody = new LWATokenRequest
             {
                 ClientId = _clientId,
                 ClientSecret = _clientSecret,
@@ -79,7 +81,7 @@ namespace AmazonBusinessSalesPartnerAPIHelper
                 if (response.ResponseStatus == ResponseStatus.Completed && response.Content != null)
                 {
                     var responseJson = JObject.Parse(response.Content);
-                    lwaToken = responseJson.GetValue("access_token")?.ToString();
+                    lwaToken = responseJson.GetValue("access_token")?.ToString() ?? string.Empty;
                 }
                 else
                 {
@@ -120,7 +122,7 @@ namespace AmazonBusinessSalesPartnerAPIHelper
                 if (response.ResponseStatus == ResponseStatus.Completed && response.Content != null)
                 {
                     var transactionsResponse = JsonConvert.DeserializeObject<TransactionsResponse>(response.Content);
-                    if (transactionsResponse == null) return null;
+                    if (transactionsResponse == null) return null!;
 
                     rawTransactions = transactionsResponse.Transactions.ToList();
 
@@ -146,13 +148,10 @@ namespace AmazonBusinessSalesPartnerAPIHelper
                     }
                 }
                 
-                if (!rawTransactions.Any()) return null;
-                
-                //filter out orders without invoice payments and only get orders where BusinessOrderInfo != null
-                var filteredTxns = rawTransactions.Where(x => x.PaymentInstrumentType == PayByInvoice && x.TransactionLineItems.Any(b => b.BusinessOrderInfo != null)).ToList();
+                if (!rawTransactions.Any()) return null!;
 
                 //map initial data to AmazonBusinessTransactions
-                mappedTransactions = MapAmazonBusinessTransactions(filteredTxns);
+                mappedTransactions = MapAmazonBusinessTransactions(rawTransactions);
             }
             catch (Exception e)
             {
@@ -163,6 +162,7 @@ namespace AmazonBusinessSalesPartnerAPIHelper
         }
         private static List<AmazonBusinessTransaction> MapAmazonBusinessTransactions(List<Transaction> transactions)
         {
+            //return a mapped list of transactions - this is a sampling of the fields that come back, there are several more in the AB Seller API
             return (from txn in transactions
                 from lineItem in txn.TransactionLineItems
                 select new AmazonBusinessTransaction
@@ -175,9 +175,8 @@ namespace AmazonBusinessSalesPartnerAPIHelper
                     PurchasedBy = txn.Buyer.Name,
                     Quantity = lineItem.ItemQuantity,
                     UNSPSC = lineItem.UNSPSC,
-                    BusinessOrderInfo = JsonConvert.SerializeObject(lineItem.BusinessOrderInfo),
+                    BusinessOrderInfo = JsonConvert.SerializeObject(lineItem.BusinessOrderInfo), //custom field
                     AmazonGroupName = txn.PurchasingCustomerGroupName,
-                    CreatedDate = DateTime.UtcNow,
                     TransactionDate = txn.TransactionDate != DateTime.MinValue ? txn.TransactionDate : null
                 }).ToList();
         }
@@ -223,7 +222,7 @@ namespace AmazonBusinessSalesPartnerAPIHelper
                     batchCounter++;
                     
                     //once there are 25 transactions in batch, build request
-                    if (batchCounter < 25 && !txn.Equals(finalTransaction)) continue;
+                    if (batchCounter < 25 && finalTransaction != null && !txn.Equals(finalTransaction)) continue;
                     var requestObject = new InvoiceDetailsByOrderLineItemsRequest
                     {
                         OrderLineItems = batchedOrderLineItems
@@ -283,6 +282,13 @@ namespace AmazonBusinessSalesPartnerAPIHelper
             return transactionsWithInvoices;
         }
 
+        /// <summary>
+        /// Checks to see if any invoices have been updated, saving any updates made to our AmazonBusinessTransaction class
+        /// </summary>
+        /// <param name="lwaToken"></param>
+        /// <param name="transactionsWithoutInvoiceInformation"></param>
+        /// <returns></returns>
+        /// <exception cref="HttpRequestException"></exception>
         public List<AmazonBusinessTransaction> CheckForUpdatedInvoiceInfo(string lwaToken, List<AmazonBusinessTransaction> transactionsWithoutInvoiceInformation)
         {
             var transactionsWithInvoiceInfo = new List<AmazonBusinessTransaction>();
@@ -313,7 +319,7 @@ namespace AmazonBusinessSalesPartnerAPIHelper
                     batchCounter++;
                     
                     //once there are 25 transactions in batch, build request
-                    if (batchCounter < 25 && !txn.Equals(finalTransaction)) continue;
+                    if (batchCounter < 25 && finalTransaction != null && !txn.Equals(finalTransaction)) continue;
                     var requestObject = new InvoiceDetailsByOrderLineItemsRequest
                     {
                         OrderLineItems = batchedOrderLineItems
@@ -351,7 +357,7 @@ namespace AmazonBusinessSalesPartnerAPIHelper
                             //if more than one invoice, create new transaction with each different invoice
                             updatedTransaction.InvoiceNumber = invoiceDetail.InvoiceNumber;
                             updatedTransaction.InvoiceIssueDate = invoiceDetail.InvoiceDate.GetValueOrDefault() != DateTime.MinValue ? invoiceDetail.InvoiceDate : null;
-                            updatedTransaction.InvoiceDueDate = invoiceDetail.InvoiceDate.GetValueOrDefault() != DateTime.MinValue ? invoiceDetail.InvoiceDate.GetValueOrDefault().AddDays(45) : (DateTime?) null;
+                            updatedTransaction.InvoiceDueDate = invoiceDetail.InvoiceDate.GetValueOrDefault() != DateTime.MinValue ? invoiceDetail.InvoiceDate.GetValueOrDefault().AddDays(45) : null;
                             
                             //only want to return ones with an invoice number
                             if (updatedTransaction.InvoiceNumber != null) 
@@ -406,27 +412,8 @@ namespace AmazonBusinessSalesPartnerAPIHelper
                     var order = ordersOutput?.Orders.FirstOrDefault();
                     if (order == null) continue;
 
-                    //add returned info to new transaction
-                    //txn.ShipmentTrackingNumber = string.Join(", ", order.Shipments.Select(s => s.CarrierTracking).Distinct() ?? new List<string>());
-                    //txn.OrderStatus = order.Shipments.All(s => s.DeliveryInformation.DeliveryStatus == DeliveryStatus.Delivered) ? "Delivered" : "Shipped";
-                    
-                    /*
-                    //update price from orders API if order API has a different amount than reconciliation
-                    var matchedOrderLineItem =
-                        (order.LineItems ?? Array.Empty<LineItem>()).FirstOrDefault(li =>
-                            li.Title == txn.PurchaseTitle && li.UNSPSC == txn.UNSPSC);
-
-                    if (txn.Quantity != matchedOrderLineItem?.ItemQuantity)
-                    {
-                        txn.Quantity = Convert.ToInt32(matchedOrderLineItem?.ItemQuantity);
-                    }
-                    if (txn.PaymentAmount != Convert.ToDecimal(matchedOrderLineItem?.ItemNetTotal.Amount))
-                        {
-                        txn.PaymentAmount = Convert.ToDecimal(matchedOrderLineItem?.ItemNetTotal.Amount);
-                        }
-                    */
-
-                    //push txn to return list
+                    //add returned info to new transaction(s) after any mapping logic
+                    //...
                     transactionsWithShippingInfo.Add(txn);
                 }
             }

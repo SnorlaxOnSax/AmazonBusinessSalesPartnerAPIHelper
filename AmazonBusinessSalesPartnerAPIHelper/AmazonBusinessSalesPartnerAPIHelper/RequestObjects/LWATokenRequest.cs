@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace AmazonBusinessSalesPartnerAPIHelper.RequestObjects
 {
-    public class LWATokenRequestBody
+    public class LWATokenRequest
     {
         [JsonPropertyName("grant_type")]
         public string GrantType { get; set; }
